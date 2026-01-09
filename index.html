@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Warung Makan Mbak Arum</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <style>
+    :root {
+      --primary: #d97706; /* Amber 600 - Kuning Emas Tua */
+      --primary-hover: #b45309; /* Amber 700 */
+      --secondary: #fde68a; /* Amber 200 - Kuning Muda */
+      --bg: #fffbeb; /* Amber 50 - Background Cream Kuning */
+      --card-bg: #ffffff;
+      --text: #78350f; /* Amber 900 - Coklat Makanan */
+      --shadow: 0 15px 25px -5px rgba(217, 119, 6, 0.15), 0 8px 10px -6px rgba(217, 119, 6, 0.1);
+    }
+    body {font-family: 'Poppins', sans-serif; background:var(--bg); color: var(--text); overflow-x: hidden;}
+    
+    /* Background Pattern Animasi dengan Ikon Makanan */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      /* Pola SVG Ikon Makanan (Nasi, Ayam, Mie, Udang, Telur) */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Ctext x='10' y='40' font-size='30'%3E🍜%3C/text%3E%3Ctext x='80' y='40' font-size='30'%3E🍗%3C/text%3E%3Ctext x='40' y='100' font-size='30'%3E🍚%3C/text%3E%3Ctext x='110' y='100' font-size='30'%3E🍤%3C/text%3E%3Ctext x='10' y='140' font-size='30'%3E🥬%3C/text%3E%3Ctext x='80' y='140' font-size='30'%3E🍳%3C/text%3E%3C/svg%3E");
+      opacity: 0.07; /* Transparan agar tidak mengganggu teks */
+      z-index: -1;
+      animation: moveBackground 40s linear infinite;
+    }
+    @keyframes moveBackground {
+      from { background-position: 0 0; }
+      to { background-position: 150px 150px; }
+    }
+    
+    header {
+      /* Background image dari folder img dengan overlay gelap agar teks terbaca */
+      background: linear-gradient(rgba(245, 158, 11, 0.4), rgba(180, 83, 9, 0.4)), url('img/background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed; /* Efek Parallax */
+      padding: 140px 20px; /* Header lebih besar */
+      text-align: center;
+      color: white;
+      border-radius: 0 0 40px 40px;
+      box-shadow: var(--shadow);
+      margin-bottom: 40px;
+      transition: background-image 1s ease-in-out;
+    }
+    header h1 {
+      font-size: 5.5rem; 
+      font-weight: 900; 
+      text-shadow: 4px 4px 10px rgba(0,0,0,0.5); 
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    header p {margin:10px 0 0; font-size: 1.1rem; opacity: 0.95;}
+    
+    section {padding: 40px 0;}
+    
+    h2 {
+      text-align: center; 
+      color: var(--primary); 
+      font-size: 2.5rem; 
+      margin-bottom: 40px; 
+      position: relative;
+      font-weight: 700;
+    }
+    h2::after {
+      content:''; display:block; width: 80px; height: 5px; 
+      background: var(--secondary); margin: 10px auto; border-radius: 10px;
+    }
+
+    .custom-card {
+      background:var(--card-bg); 
+      border-radius:25px; 
+      border: none;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+      overflow:hidden; 
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      opacity: 0; /* Untuk animasi fade-in */
+      animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    .custom-card:hover {transform: translateY(-15px) scale(1.03) rotate(1deg); box-shadow: 0 20px 30px -10px rgba(217, 119, 6, 0.3);}
+    
+    /* Staggered Animation Delay (Muncul bergantian) */
+    .col:nth-child(1) .custom-card { animation-delay: 0.1s; }
+    .col:nth-child(2) .custom-card { animation-delay: 0.2s; }
+    .col:nth-child(3) .custom-card { animation-delay: 0.3s; }
+    .col:nth-child(4) .custom-card { animation-delay: 0.4s; }
+    .col:nth-child(5) .custom-card { animation-delay: 0.5s; }
+    .col:nth-child(6) .custom-card { animation-delay: 0.6s; }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .custom-card img {width:100%; height:220px; object-fit:cover; transition: transform 0.5s ease;}
+    .custom-card:hover img {transform: scale(1.1) rotate(-2deg);}
+    
+    .custom-card h3 {margin: 15px 15px 5px; font-size: 1.5rem; color: #431407; font-weight: 800;}
+    .food-desc {
+      font-size: 0.9rem; color: #6b7280; margin: 0 15px 10px; 
+      line-height: 1.4; min-height: 40px;
+    }
+    .food-price {
+      color: var(--primary); font-weight: 800; font-size: 1.3rem; 
+      margin: 0 15px 15px; display: block;
+      text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+    }
+    
+    .btn-pesan {
+      background: linear-gradient(45deg, var(--primary), #f59e0b, var(--primary));
+      background-size: 200% 200%;
+      animation: gradientMove 3s ease infinite, pulseBtn 2s infinite;
+      color: white; 
+      border:none; 
+      border-radius: 50px; 
+      padding: 10px 25px;
+      font-weight: 600;
+      transition: background 0.2s;
+      box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
+      width: 100%;
+    }
+    .btn-pesan:hover {
+        background:var(--primary-hover); 
+        color: white;
+        animation: jelly 0.5s;
+    }
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes jelly {
+        0%, 100% { transform: scale(1, 1); }
+        25% { transform: scale(0.9, 1.1); }
+        50% { transform: scale(1.1, 0.9); }
+        75% { transform: scale(0.95, 1.05); }
+    }
+    
+    @keyframes pulseBtn {
+      0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(217, 119, 6, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+    }
+    
+    .profile {
+      background: white; 
+      border-radius:20px; 
+      padding:40px; 
+      box-shadow: var(--shadow);
+      text-align: center;
+      margin-bottom: 50px;
+      border: 2px dashed var(--secondary);
+      position: relative;
+    }
+    .profile p {font-size: 1.1rem; color: #4b5563;}
+    
+    .chef-photo {
+      width: 250px; height: 250px; /* Ukuran foto besar */
+      object-fit: cover; border-radius: 50%; 
+      margin: -150px auto 20px; 
+      border: 8px solid white;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      display: block;
+      background: #fff;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .chef-photo:hover { transform: scale(1.1) rotate(10deg); cursor: pointer; }
+    
+    footer {
+      background: #78350f; 
+      color: #ffedd5; 
+      text-align:center; 
+      padding:40px 20px; 
+      margin-top: 60px;
+      font-size: 0.9rem;
+    }
+    
+    #orderBox {
+      position: fixed; 
+      right: 20px; 
+      bottom: 30px; 
+      background: rgba(255, 255, 255, 0.95); 
+      backdrop-filter: blur(10px); /* Efek kaca buram */
+      padding: 0; 
+      border-radius: 20px; 
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+      width: 340px;
+      z-index: 900;
+      border: 1px solid rgba(255,255,255,0.5);
+      animation: slideUp 0.5s ease-out;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #orderBox:hover { transform: translateY(-5px); }
+
+    @keyframes slideUp { from {transform: translateY(50px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+    
+    .cart-header {
+        background: linear-gradient(135deg, var(--primary), #f59e0b);
+        color: white;
+        padding: 15px 20px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .cart-body { padding: 15px; max-height: 250px; overflow-y: auto; background: #fff; }
+    
+    #orderList { font-size: 0.9rem; }
+    /* Scrollbar cantik untuk list */
+    .cart-body::-webkit-scrollbar { width: 6px; }
+    .cart-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+    .cart-footer {
+        padding: 15px 20px;
+        background: #f9fafb;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .btn-checkout {
+        background: linear-gradient(to right, #10b981, #059669);
+        border: none; color: white; padding: 12px; border-radius: 12px;
+        width: 100%; font-weight: bold;
+        box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+        transition: all 0.3s ease;
+        display: flex; justify-content: center; align-items: center; gap: 8px;
+    }
+    .btn-checkout:hover { transform: translateY(-2px); box-shadow: 0 10px 15px rgba(16, 185, 129, 0.4); }
+
+    @media (max-width: 600px) {
+      header h1 {font-size: 2rem;}
+      #orderBox {width: calc(100% - 60px); right: 30px; bottom: 20px;}
+    }
+
+    /* Modal Struk Styles */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
+    .modal-content { background-color: #fff; margin: 5% auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: slideDown 0.3s ease-out; max-height: 90vh; overflow-y: auto; }
+    @keyframes slideDown { from {transform: translateY(-50px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+    .close { position: absolute; right: 20px; top: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.2s; }
+    .close:hover { color: var(--primary); }
+    
+    .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px dashed #e5e7eb; padding-bottom: 8px; }
+    .cart-controls { display: flex; align-items: center; gap: 8px; }
+    .cart-controls button { background: #f3f4f6; color: #374151; border: none; width: 28px; height: 28px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
+    .cart-controls button:hover { background: #e5e7eb; }
+    .cart-controls button.btn-delete { background: #fee2e2; color: #ef4444; }
+    .cart-controls button.btn-delete:hover { background: #fecaca; }
+    
+    .qris-container { text-align: center; margin: 25px 0; padding: 20px; background: #f9fafb; border-radius: 15px; border: 2px dashed #d1d5db; }
+    .qris-container img { max-width: 100%; height: auto; border-radius: 8px; mix-blend-mode: multiply; }
+    .qris-container p { margin: 0 0 10px; font-weight: 600; color: #4b5563; }
+
+    .struk-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    .struk-table td { padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+    .struk-table tr:last-child td { border-bottom: none; }
+
+    /* Styles untuk Pilihan Rasa */
+    .option-group { margin-bottom: 15px; text-align: left; background: #f9fafb; padding: 15px; border-radius: 10px; border: 1px solid #e5e7eb; }
+    .option-group label { display: block; margin-bottom: 8px; cursor: pointer; }
+
+    /* Review Section Styles */
+    .review-section { background: white; padding: 40px; border-radius: 20px; margin: 40px auto; box-shadow: var(--shadow); text-align: center; max-width: 800px; border: 1px solid #fcd34d; }
+    .star-rating { direction: rtl; display: inline-block; font-size: 2.5rem; margin: 10px 0; }
+    .star-rating input { display: none; }
+    .star-rating label { color: #ddd; cursor: pointer; transition: color 0.2s; }
+    .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: #fbbf24; }
+    textarea { width: 100%; padding: 15px; border: 1px solid #d1d5db; border-radius: 10px; margin-top: 10px; font-family: inherit; box-sizing: border-box; resize: vertical; }
+
+    /* Styles untuk Game Pukul Makanan */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .hole {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1;
+      background: #f3f4f6;
+      border-radius: 50%;
+      border: 4px solid #e5e7eb;
+      box-shadow: inset 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .food-popup {
+      width: 100%; height: 100%;
+      position: absolute;
+      top: 100%; /* Sembunyi di bawah */
+      left: 0;
+      transition: top 0.1s;
+      cursor: pointer;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .food-popup img {
+      width: 80%; height: 80%;
+      object-fit: contain;
+      pointer-events: none; /* Agar klik tembus ke div */
+      filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+    }
+    .hole.up .food-popup {
+      top: 10%; /* Muncul ke atas */
+    }
+
+    /* Animasi Koki Menari Lucu */
+    @keyframes funny-chef {
+      0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+      25% { transform: translateY(-10px) rotate(-10deg) scale(1.1); }
+      50% { transform: translateY(5px) rotate(5deg) scale(1.05); }
+      75% { transform: translateY(-5px) rotate(10deg) scale(1.1); }
+    }
+
+    /* Animasi Keranjang Berguncang */
+    .shake-cart {
+      animation: cart-shake 0.8s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes cart-shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
+    /* === GLOBAL SMOOTH === */
+* {
+  scroll-behavior: smooth;
+}
+
+/* === CARD FLOAT EFFECT === */
+.card, .menu-card {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.card:hover, .menu-card:hover {
+  transform: translateY(-12px) scale(1.03);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+/* === BUTTON GLOW === */
+button, .btn {
+  position: relative;
+  overflow: hidden;
+}
+
+button::after, .btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.6),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+button:hover::after, .btn:hover::after {
+  left: 100%;
+}
+
+/* === ICON PULSE === */
+i, .bi {
+  transition: transform 0.3s ease;
+}
+
+i:hover, .bi:hover {
+  transform: scale(1.3) rotate(-8deg);
+}
+
+/* === SECTION FADE IN === */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === BEST SELLER BADGE SHAKE === */
+.badge {
+  animation: shake 2.5s infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(3deg); }
+  75% { transform: rotate(-3deg); }
+}
+
+/* === FLOATING MASCOT (SI PENTOL KOKI) === */
+.floating-mascot {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  width: 140px; /* Ukuran Besar */
+  height: 140px;
+  z-index: 900;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+  animation: floatMascot 4s ease-in-out infinite;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.floating-mascot:hover {
+  transform: scale(1.15) rotate(5deg);
+}
+.floating-mascot svg {
+  width: 100%;
+  height: 100%;
+}
+.mascot-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: white;
+  padding: 12px 20px;
+  border-radius: 20px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  font-weight: 800;
+  color: var(--primary);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  border: 2px solid var(--secondary);
+}
+.floating-mascot:hover .mascot-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-10px);
+}
+@keyframes floatMascot {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/* === SHINE EFFECT ON CARDS (EFEK KILAU) === */
+.custom-card {
+  position: relative;
+  overflow: hidden;
+}
+.custom-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 100%);
+  transform: skewX(-25deg);
+  transition: 0.5s;
+  z-index: 1;
+  pointer-events: none;
+}
+.custom-card:hover::before {
+  left: 200%;
+  transition: 0.8s ease-in-out;
+}
+
+/* === CUSTOM MAP MARKER === */
+.custom-map-marker {
+  background: transparent;
+  border: none;
+}
+.marker-wrapper {
+  position: relative;
+  width: 60px;
+  height: 80px;
+}
+.pin-bounce {
+  position: absolute;
+  bottom: 15px; left: 5px;
+  width: 50px; height: 50px;
+  animation: bounceY 2s infinite ease-in-out;
+}
+.pin-shape {
+  width: 100%; height: 100%;
+  background: var(--primary);
+  border: 4px solid white;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  display: flex; justify-content: center; align-items: center;
+}
+.pin-shape i { transform: rotate(45deg); font-size: 24px; color: white; }
+.shadow-pulse {
+  position: absolute; bottom: 0; left: 10px;
+  width: 40px; height: 10px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 50%;
+  filter: blur(2px);
+  animation: shadowScale 2s infinite ease-in-out;
+}
+@keyframes bounceY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+@keyframes shadowScale {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(0.6); opacity: 0.1; }
+}
+
+/* === PROGRESS BAR === */
+.progress-container {
+  position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: transparent; z-index: 9999;
+}
+.progress-bar {
+  height: 5px; background: linear-gradient(90deg, var(--primary), #fbbf24); width: 0%; border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 15px rgba(217, 119, 6, 0.8); transition: width 0.1s;
+}
+
+/* === RIPPLE EFFECT === */
+.ripple {
+  position: absolute; background: rgba(255, 255, 255, 0.7); border-radius: 50%; transform: scale(0); animation: rippleAnim 0.6s linear; pointer-events: none;
+}
+@keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+
+  </style>
+</head>
+<script>
+  // Auto add reveal class to sections
+  document.querySelectorAll("section, .card, .menu-card").forEach(el => {
+    el.classList.add("reveal");
+  });
+
+  // Scroll animation
+  function revealOnScroll() {
+    document.querySelectorAll(".reveal").forEach(el => {
+      const windowHeight = window.innerHeight;
+      const elementTop = el.getBoundingClientRect().top;
+      if (elementTop < windowHeight - 80) {
+        el.classList.add("active");
+      }
+    });
+  }
+
+  window.addEventListener("scroll", revealOnScroll);
+  window.addEventListener("load", revealOnScroll);
+</script>
+<body>
+
+<div class="progress-container">
+  <div class="progress-bar" id="myBar"></div>
+</div>
+
+<header>
+  <div style="margin-bottom: 10px;">
+    <!-- Karakter Koki Manusia Lucu SVG -->
+    <svg width="220" height="220" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="animation: funny-chef 3s ease-in-out infinite; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));">
+      <!-- Topi Koki -->
+      <path d="M50 60 Q40 10 100 10 Q160 10 150 60 L50 60" fill="#fff" stroke="#d97706" stroke-width="3"/>
+      <rect x="50" y="60" width="100" height="25" rx="5" fill="#fff" stroke="#d97706" stroke-width="3"/>
+      
+      <!-- Wajah -->
+      <circle cx="100" cy="110" r="45" fill="#ffdbac" stroke="#d97706" stroke-width="2"/>
+      <!-- Mata -->
+      <ellipse cx="85" cy="105" rx="5" ry="7" fill="#431407"/>
+      <ellipse cx="115" cy="105" rx="5" ry="7" fill="#431407"/>
+      <!-- Kumis Lucu -->
+      <path d="M85 125 Q100 115 115 125 Q125 120 115 130 Q100 120 85 130 Q75 120 85 125" fill="#431407"/>
+      <!-- Pipi Merah -->
+      <circle cx="70" cy="115" r="8" fill="#fca5a5" opacity="0.6"/>
+      <circle cx="130" cy="115" r="8" fill="#fca5a5" opacity="0.6"/>
+      <!-- Tangan -->
+      <circle cx="40" cy="150" r="18" fill="#ffdbac" stroke="#d97706" stroke-width="2"/>
+      <circle cx="160" cy="150" r="18" fill="#ffdbac" stroke="#d97706" stroke-width="2"/>
+    </svg>
+  </div>
+  <h1>Warung Mbak Arum</h1>
+  <p class="lead">Rasa Juara, Harga Bersahabat. Masakan Rumahan Penuh Cinta.</p>
+  <p style="font-size: 1.2rem; font-weight: bold; color: #fff; margin-top: 10px; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">
+    🚀 Bisa Pesan Langsung di Sini! Klik Menu di Bawah 👇
+  </p>
+  <p style="margin-top:15px; font-weight:600; background:rgba(255,255,255,0.2); display:inline-block; padding:5px 15px; border-radius:20px;">
+    Rating 4.8 / 5 dari Pelanggan Setia
+  </p>
+</header>
+
+<section class="container profile">
+  <img src="img/penjual.jpg" class="chef-photo" alt="Foto Mbak Arum" onerror="this.src='https://placehold.co/400x400?text=Foto+Penjual'"/>
+  <h2><i class="bi bi-shop-window text-warning"></i> WARUNG MBAK ARUM</h2>
+  <p class="lead" style="font-weight:600; color:var(--primary);">Rasa Rumahan, Bikin Kangen</p>
+  
+  <div style="text-align: left; max-width: 600px; margin: 20px auto; line-height: 1.8; font-size: 1.05rem; background: #fff7ed; padding: 25px; border-radius: 15px; border: 2px dashed #fcd34d;">
+    <p><strong>👩‍🍳 Owner:</strong> <span style="font-family: cursive; font-size: 1.3rem; color: var(--primary);">Mbak Arum</span></p>
+    
+    <p><strong>🍲 Menu Favorit:</strong><br>
+    ✨ Nasi Goreng gurih khas rumahan<br>
+    🥦 Capcay segar dengan sayuran pilihan<br>
+    🍜 Bakmi Paklay kaya rasa<br>
+    🍡 Pentol hangat, cocok buat ngemil</p>
+    
+    <p><strong>📍 Lokasi:</strong><br>
+    🏡 Ngablak, Kroyo<br>
+    🗺️ Kec. Karangmalang<br>
+    Kabupaten Sragen, Jawa Tengah</p>
+    
+    <p><strong>⏰ Jam Operasional:</strong><br>
+    🕔 17.00 – 22.30 WIB</p>
+    
+    <p><strong>❤️ Kenapa Pilih Kami?</strong><br>
+    ✅ Rasa konsisten & bikin nagih<br>
+    🥬 Bahan segar, dimasak setiap hari<br>
+    💰 Harga ramah di kantong<br>
+    🌙 Cocok untuk makan sore & malam</p>
+  </div>
+
+  <p style="margin-top:20px; font-style:italic; color:var(--primary); font-weight:bold; font-size: 1.2rem;">Datang lapar, pulang puas.</p>
+</section>
+
+<section class="container">
+  <h2><i class="bi bi-fire text-danger"></i> Menu Favorit</h2>
+  <p class="text-center mb-4" style="font-size: 1.1rem; color: #666;">Klik tombol <b>"Pesan Sekarang"</b> pada menu yang Anda inginkan untuk memasukkan ke keranjang.</p>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/nasi-goreng.jpg" alt="Nasi Goreng" onerror="this.src='https://placehold.co/400x300?text=Nasi+Goreng'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Nasi Goreng</h3>
+        <p class="food-desc">Nasi goreng spesial dengan bumbu rempah rahasia, suwiran ayam, dan telur.</p>
+        <span class="food-price">Rp 12.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Nasi Goreng',12000)">Pesan Sekarang</button>
+      </div>
+    </div>
+    </div>
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/bakmi-goreng.jpg" alt="Bakmi Goreng" onerror="this.src='https://placehold.co/400x300?text=Bakmi+Goreng'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Bakmi Goreng</h3>
+        <p class="food-desc">Mie telur kenyal digoreng dengan kecap manis, sayuran segar, dan suwiran ayam.</p>
+        <span class="food-price">Rp 12.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Bakmi Goreng',12000)">Pesan Sekarang</button>
+      </div>
+    </div>
+    </div>
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/bakmi-rebus.jpg" alt="Bakmi Rebus" onerror="this.src='https://placehold.co/400x300?text=Bakmi+Rebus'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Bakmi Rebus</h3>
+        <p class="food-desc">Mie kuah kaldu ayam kampung yang gurih, hangat, dan menenangkan hati.</p>
+        <span class="food-price">Rp 12.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Bakmi Rebus',12000)">Pesan Sekarang</button>
+      </div>
+    </div>
+    </div>
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/capcay-goreng.jpg" alt="Capcay Goreng" onerror="this.src='https://placehold.co/400x300?text=Capcay+Goreng'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Capcay Goreng</h3>
+        <p class="food-desc">Tumis aneka sayuran segar (wortel, kembang kol, sawi) dengan campuran tempung.</p>
+        <span class="food-price">Rp 12.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Capcay Goreng',12000)">Pesan Sekarang</button>
+      </div>
+    </div>
+    </div>
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/capcay-rebus.jpg" alt="Capcay Rebus" onerror="this.src='https://placehold.co/400x300?text=Capcay+Rebus'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Capcay Rebus</h3>
+        <p class="food-desc">Sayuran lengkap dan olahan tepung dengan kuah bening berkaldu yang segar dan sehat.</p>
+        <span class="food-price">Rp 12.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Capcay Rebus',12000)">Pesan Sekarang</button>
+      </div>
+    </div>
+    </div>
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/paklay.jpg" alt="Paklay" onerror="this.src='https://placehold.co/400x300?text=Paklay'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Paklay</h3>
+        <p class="food-desc">Tumisan sayur rebus segar dan ayam dengan bumbu manis gurih asin.</p>
+        <span class="food-price">Rp 12.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Paklay',12000)">Pesan Sekarang</button>
+      </div>
+    </div>
+    </div>
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/pentol.jpg" alt="Pentol Goreng" onerror="this.src='https://placehold.co/400x300?text=Pentol'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Pentol Goreng</h3>
+        <p class="food-desc">Pentol tepung asli digoreng garing, cocok untuk camilan gurih.</p>
+        <span class="food-price">Mulai Rp 5.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Pentol Goreng',5000)">Pesan Sekarang</button>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<section class="container">
+  <h2><i class="bi bi-cup-straw text-info"></i> Segarnya Minuman</h2>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/es-teh.jpg" alt="Es Teh" onerror="this.src='https://placehold.co/400x300?text=Es+Teh'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Teh Manis</h3>
+        <p class="food-desc">Teh wangi diseduh segar dengan gula asli.</p>
+        <span class="food-price">Rp 2.500</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Teh Manis', 2500)">Pesan</button>
+      </div>
+    </div>
+    </div>
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/es-jeruk.jpg" alt="Es Jeruk" onerror="this.src='https://placehold.co/400x300?text=Es+Jeruk'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Jeruk Peras</h3>
+        <p class="food-desc">Jeruk peras asli yang segar, kaya vitamin C.</p>
+        <span class="food-price">Rp 3.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Jeruk Peras', 3000)">Pesan</button>
+      </div>
+    </div>
+    </div>
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/kopi-hitam.jpg" alt="Kopi Hitam" onerror="this.src='https://placehold.co/400x300?text=Kopi+Hitam'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Kopi Kapal Api</h3>
+        <p class="food-desc">Kopi hitam legendaris dengan aroma dan rasa yang kuat.</p>
+        <span class="food-price">Rp 3.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Kopi Kapal Api', 3000)">Pesan</button>
+      </div>
+    </div>
+    </div>
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/kopi-susu.jpg" alt="Kopi Susu" onerror="this.src='https://placehold.co/400x300?text=Kopi+Susu'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Kopi Good Day</h3>
+        <p class="food-desc">Pilihan rasa: Caribbean Nut, Chococino, Moccacino.</p>
+        <span class="food-price">Rp 3.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Kopi Good Day', 3000)">Pesan</button>
+      </div>
+    </div>
+    </div>
+    <div class="col">
+    <div class="card custom-card h-100">
+      <img src="img/teajus.jpg" alt="Teajus" onerror="this.src='https://placehold.co/400x300?text=Teajus'"/>
+      <div class="card-body d-flex flex-column text-center">
+        <h3>Teajus</h3>
+        <p class="food-desc">Pilihan rasa: Gula Batu, Apple, Lemon, Melati.</p>
+        <span class="food-price">Rp 1.000</span>
+        <button class="btn btn-pesan mt-auto" onclick="openFoodModal('Teajus', 1000)">Pesan</button>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<section class="container">
+  <h2><i class="bi bi-geo-alt-fill text-danger"></i> Lokasi Kami</h2>
+  <div id="map" style="height:550px;">
+  <div class="text-center p-5 rounded-5" style="background: white; box-shadow: var(--shadow); border: 3px dashed var(--secondary);">
+    <h2 class="mb-3"><i class="bi bi-joystick text-primary"></i> Pukul Makanan!</h2>
+    <p class="mb-4">Ketuk makanan yang muncul secepat mungkin! Awas jangan sampai lolos!</p>
+    
+    <div class="d-flex justify-content-center gap-5 mb-4 align-items-center">
+        <div class="bg-light px-4 py-2 rounded-pill border">
+            <h4 class="m-0">Skor: <span id="scoreBoard" class="text-primary fw-bold">0</span></h4>
+        </div>
+        <button class="btn btn-primary btn-lg rounded-pill px-5 shadow" onclick="startGame()" id="startBtn">Mulai!</button>
+    </div>
+
+    <div class="game-grid">
+      <div class="hole" id="hole1"><div class="food-popup" onclick="bonk(event)"><img src="img/pentol.jpg"></div></div>
+      <div class="hole" id="hole2"><div class="food-popup" onclick="bonk(event)"><img src="img/nasi-goreng.jpg"></div></div>
+      <div class="hole" id="hole3"><div class="food-popup" onclick="bonk(event)"><img src="img/es-teh.jpg"></div></div>
+      <div class="hole" id="hole4"><div class="food-popup" onclick="bonk(event)"><img src="img/bakmi-goreng.jpg"></div></div>
+      <div class="hole" id="hole5"><div class="food-popup" onclick="bonk(event)"><img src="img/es-jeruk.jpg"></div></div>
+      <div class="hole" id="hole6"><div class="food-popup" onclick="bonk(event)"><img src="img/kopi-susu.jpg"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="container review-section">
+  <h2><i class="bi bi-star-fill text-warning"></i> Beri Ulasan & Rating</h2>
+  <p>Bagaimana pengalaman makanmu di sini? Ceritakan pada kami!</p>
+  
+  <form id="reviewForm" onsubmit="saveReview(event)">
+    <div class="mb-3 text-start">
+      <label class="form-label fw-bold">Nama Kamu:</label>
+      <input type="text" class="form-control" name="nama" required placeholder="Tulis namamu..." style="background:#fffbeb;">
+    </div>
+    
+    <div style="margin: 20px 0;">
+      <label style="display:block; font-weight:600; margin-bottom:5px;">Rating:</label>
+      <div class="star-rating">
+        <input type="radio" id="star5" name="rating" value="5" required><label for="star5" title="Sempurna">★</label>
+        <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="Bagus">★</label>
+        <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="Cukup">★</label>
+        <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="Kurang">★</label>
+        <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="Buruk">★</label>
+      </div>
+    </div>
+
+    <div class="mb-3 text-start">
+      <label class="form-label fw-bold">Komentar:</label>
+      <textarea class="form-control" name="komentar" rows="4" placeholder="Tulis ulasanmu di sini..." required style="background:#fffbeb;"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-warning text-white fw-bold px-4 py-2 shadow">Kirim Ulasan</button>
+  </form>
+
+  <!-- Container untuk menampilkan ulasan di halaman utama -->
+  <div id="reviewsContainer" style="text-align:left; margin-top:40px; border-top: 2px dashed #fcd34d; padding-top: 20px;">
+    <h3 style="text-align:center; color:var(--primary);">Ulasan Terbaru</h3>
+    <div id="latestReviews" style="max-height: 600px; overflow-y: auto;">
+        <!-- ULASAN_BARU_DISINI -->
+    </div>
+  </div>
+</section>
+
+<div id="orderBox">
+  <div class="cart-header">
+    <span><i class="bi bi-basket2-fill"></i> Keranjang Makan</span>
+    <span class="badge bg-white text-warning rounded-pill shadow-sm" id="cartCount" style="font-size:0.9rem;">0</span>
+  </div>
+  
+  <div class="cart-body">
+    <div id="orderList"></div>
+  </div>
+
+  <div class="cart-footer">
+    <div style="display:flex; justify-content:space-between; font-size:1.1rem; margin-bottom:12px; font-weight:bold; color:#374151;">
+        <span>Total:</span> 
+        <span style="color:var(--primary);">Rp <span id="total">0</span></span>
+    </div>
+    <button class="btn-checkout" onclick="openModal()">
+        Bayar Sekarang <i class="bi bi-arrow-right-circle"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Floating Mascot (Si Pentol Koki) -->
+<div class="floating-mascot" onclick="document.querySelector('.profile').scrollIntoView({behavior: 'smooth'})">
+  <div class="mascot-tooltip">Halo! Mau makan apa? 😋</div>
+  <!-- SVG Karakter Lucu -->
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <g>
+      <!-- Badan Pentol -->
+      <circle cx="100" cy="110" r="70" fill="#fbbf24" stroke="#b45309" stroke-width="4"/>
+      <!-- Mata -->
+      <ellipse cx="75" cy="100" rx="8" ry="12" fill="#431407"/>
+      <ellipse cx="125" cy="100" rx="8" ry="12" fill="#431407"/>
+      <!-- Pipi Merah -->
+      <circle cx="65" cy="120" r="10" fill="#fca5a5" opacity="0.7"/>
+      <circle cx="135" cy="120" r="10" fill="#fca5a5" opacity="0.7"/>
+      <!-- Mulut Senyum -->
+      <path d="M 85 125 Q 100 140 115 125" stroke="#431407" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- Topi Koki -->
+      <path d="M 60 60 Q 60 10 100 10 Q 140 10 140 60" fill="#fff" stroke="#b45309" stroke-width="3"/>
+      <rect x="60" y="60" width="80" height="20" rx="5" fill="#fff" stroke="#b45309" stroke-width="3"/>
+      <!-- Tangan Kecil -->
+      <circle cx="30" cy="120" r="15" fill="#fbbf24" stroke="#b45309" stroke-width="3"/>
+      <circle cx="170" cy="120" r="15" fill="#fbbf24" stroke="#b45309" stroke-width="3"/>
+    </g>
+  </svg>
+</div>
+
+<!-- Modal Kustomisasi Makanan -->
+<div id="foodModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeFoodModal()">&times;</span>
+    <h3 id="modalFoodTitle" style="color:var(--primary); margin-top:0;">Nama Menu</h3>
+    <p id="basePriceDisplay">Harga Dasar: Rp <span id="modalBasePrice">0</span></p>
+    
+    <!-- Opsi Standar (Pedas & Telur) -->
+    <div id="standardOptions">
+    <div class="option-group">
+      <p style="font-weight:bold; margin-top:0;">Tingkat Pedas:</p>
+      <label><input type="radio" name="pedas" value="Tidak Pedas" checked onchange="calculateModalPrice()"> Tidak Pedas</label>
+      <label><input type="radio" name="pedas" value="Sedang" onchange="calculateModalPrice()"> Sedang</label>
+      <label><input type="radio" name="pedas" value="Pedas" onchange="calculateModalPrice()"> Pedas</label>
+      <label><input type="radio" name="pedas" value="Pedas Sekali" onchange="calculateModalPrice()"> Pedas Sekali (+Rp 1.000)</label>
+    </div>
+
+    <div class="option-group">
+      <p style="font-weight:bold; margin-top:0;">Tambahan:</p>
+      <label><input type="checkbox" id="extraTelur" onchange="calculateModalPrice()"> Extra Telur (+Rp 3.000)</label>
+    </div>
+    </div>
+
+    <!-- Opsi Good Day -->
+    <div id="goodDayOptions" style="display:none;" class="option-group">
+      <p style="font-weight:bold; margin-top:0;">Pilih Rasa:</p>
+      <label><input type="radio" name="goodDayFlavor" value="Caribbean Nut" checked> Caribbean Nut</label><br>
+      <label><input type="radio" name="goodDayFlavor" value="Chococino"> Chococino</label><br>
+      <label><input type="radio" name="goodDayFlavor" value="Moccacino"> Moccacino</label>
+    </div>
+
+    <!-- Opsi Teajus -->
+    <div id="teajusOptions" style="display:none;" class="option-group">
+      <p style="font-weight:bold; margin-top:0;">Pilih Rasa:</p>
+      <label><input type="radio" name="teajusFlavor" value="Gula Batu" checked> Gula Batu</label><br>
+      <label><input type="radio" name="teajusFlavor" value="Apple"> Apple</label><br>
+      <label><input type="radio" name="teajusFlavor" value="Lemon"> Lemon</label><br>
+      <label><input type="radio" name="teajusFlavor" value="Melati"> Melati</label>
+    </div>
+
+    <!-- Opsi Suhu (Panas/Es) -->
+    <div id="tempOptions" style="display:none;" class="option-group">
+      <p style="font-weight:bold; margin-top:0;">Pilih Suhu:</p>
+      <label><input type="radio" name="tempChoice" value="Es" checked> Es (Dingin)</label>
+      <label><input type="radio" name="tempChoice" value="Panas"> Panas / Hangat</label>
+    </div>
+
+    <!-- Opsi Khusus Pentol -->
+    <div id="pentolOptions" style="display:none;" class="option-group">
+      <p style="font-weight:bold; margin-top:0;">Pilih Nominal:</p>
+      <label><input type="radio" name="pentolPrice" value="5000" checked onchange="calculateModalPrice()"> Rp 5.000</label><br>
+      <label><input type="radio" name="pentolPrice" value="10000" onchange="calculateModalPrice()"> Rp 10.000</label><br>
+      <label><input type="radio" name="pentolPrice" value="15000" onchange="calculateModalPrice()"> Rp 15.000</label><br>
+      <label><input type="radio" name="pentolPrice" value="custom" onchange="calculateModalPrice()"> Custom (Kelipatan 5.000)</label>
+      <div id="pentolCustomInput" style="display:none; margin-top:10px;">
+        <input type="number" id="customPentolPrice" min="5000" step="5000" value="20000" class="form-control" onchange="calculateModalPrice()" onkeyup="calculateModalPrice()" placeholder="Contoh: 20000">
+        <small class="text-danger" id="pentolError" style="display:none;">Harus kelipatan 5000!</small>
+      </div>
+    </div>
+
+    <!-- Opsi Catatan Pesanan -->
+    <div class="option-group">
+      <p style="font-weight:bold; margin-top:0;">Catatan Pesanan:</p>
+      <input type="text" id="modalOrderNote" class="form-control" placeholder="Contoh: Jangan pakai bawang, es sedikit, dll...">
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+      <div style="font-weight:bold; font-size:1.1rem;">Total: Rp <span id="modalTotalPrice">0</span></div>
+      <button onclick="confirmFoodOrder()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">+ Masuk Keranjang</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Struk & QRIS -->
+<div id="strukModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2 class="text-center" style="color:var(--primary); margin-top:0;">Struk Pesanan</h2>
+    <p style="text-align:center; color:#666; font-size:0.9rem; margin-bottom:20px;">Warung Mbak Arum</p>
+    
+    <div id="strukItems"></div>
+    
+    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem; margin-top:15px; padding-top:15px; border-top:2px solid #f3f4f6;">
+      <span>Total Bayar:</span>
+      <span style="color:var(--primary);">Rp <span id="strukTotal">0</span></span>
+    </div>
+    
+    <!-- Form Informasi Pemesan -->
+    <div class="mt-3 pt-3 border-top border-dashed">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Nama Anda:</label>
+        <input type="text" class="form-control" id="customerName" placeholder="Masukkan nama...">
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Tipe Pesanan:</label>
+        <select class="form-select" id="orderType" onchange="toggleAddress()">
+          <option value="Dine In">Makan di Tempat</option>
+          <option value="Take Away">Bungkus (Ambil Sendiri)</option>
+          <option value="Delivery">Delivery (Radius Max 500m)</option>
+        </select>
+      </div>
+      <div class="mb-3" id="addressGroup" style="display:none;">
+        <label class="form-label fw-bold">Alamat Pengiriman:</label>
+        <input type="text" class="form-control" id="customerAddress" placeholder="Alamat lengkap pengiriman...">
+      </div>
+    </div>
+
+    <div class="qris-container">
+      <p>Scan QRIS untuk Pembayaran</p>
+      <!-- Pastikan ada file qris.jpg di folder img, atau gunakan placeholder -->
+      <img src="img/qris.jpg" alt="QRIS Code" onerror="this.src='https://placehold.co/300x300?text=QRIS+Scan+Disini'"/>
+    </div>
+
+    <button onclick="kirimPesanan()" class="btn btn-success w-100 py-3 fw-bold shadow">
+      Konfirmasi & Kirim WA
+    </button>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 Warung Makan Mbak Arum<br>Dibuat dengan Sepenuh Hati untuk Pecinta Kuliner</p>
+</footer>
+
+<!-- Audio Effect -->
+<audio id="popSound" src="data:audio/mpeg;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU'+'T19XgAAAAAA//8/f/f/v/+v/7//f/7/Pv6/fr7/Pr5/fn5/f35/vr4/vX3/vT2/vX2/vX2/vT2/vX3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/vT3/v-'" preload="auto"></audio>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+  // Menggunakan Array of Objects untuk manajemen keranjang yang lebih baik
+  let cart = [];
+  
+  // Variabel sementara untuk modal makanan
+  let currentFood = { name: '', basePrice: 0 };
+
+  // Fungsi untuk Minuman (Langsung masuk keranjang tanpa opsi pedas)
+  function addDrink(menu, harga) {
+    addToCart(menu, harga, '');
+  }
+
+  // Fungsi Buka Modal Makanan
+  function openFoodModal(name, price) {
+    currentFood = { name: name, basePrice: price };
+    document.getElementById('modalFoodTitle').innerText = name;
+    document.getElementById('modalBasePrice').innerText = price.toLocaleString('id-ID');
+    
+    // Reset Form
+    document.getElementById('standardOptions').style.display = 'none';
+    document.getElementById('pentolOptions').style.display = 'none';
+    document.getElementById('goodDayOptions').style.display = 'none';
+    document.getElementById('teajusOptions').style.display = 'none';
+    document.getElementById('tempOptions').style.display = 'none';
+    document.getElementById('basePriceDisplay').style.display = 'block';
+    document.getElementById('modalOrderNote').value = '';
+
+    if (name === 'Pentol Goreng') {
+        document.getElementById('pentolOptions').style.display = 'block';
+        document.getElementById('basePriceDisplay').style.display = 'none';
+        document.querySelector('input[name="pentolPrice"][value="5000"]').checked = true;
+    } else if (name === 'Kopi Good Day') {
+        document.getElementById('goodDayOptions').style.display = 'block';
+        document.getElementById('tempOptions').style.display = 'block';
+        document.querySelectorAll('input[name="goodDayFlavor"]')[0].checked = true;
+        document.querySelector('input[name="tempChoice"][value="Es"]').checked = true;
+    } else if (name === 'Teajus') {
+        document.getElementById('teajusOptions').style.display = 'block';
+        document.getElementById('tempOptions').style.display = 'block';
+        document.querySelectorAll('input[name="teajusFlavor"]')[0].checked = true;
+        document.querySelector('input[name="tempChoice"][value="Es"]').checked = true;
+    } else if (name === 'Teh Manis' || name === 'Jeruk Peras' || name === 'Kopi Kapal Api') {
+        document.getElementById('tempOptions').style.display = 'block';
+        document.querySelector('input[name="tempChoice"][value="Es"]').checked = true;
+    } else {
+        document.getElementById('standardOptions').style.display = 'block';
+        document.querySelectorAll('input[name="pedas"]')[0].checked = true;
+        document.getElementById('extraTelur').checked = false;
+    }
+    
+    calculateModalPrice();
+    document.getElementById('foodModal').style.display = 'block';
+  }
+
+  function closeFoodModal() {
+    document.getElementById('foodModal').style.display = 'none';
+  }
+
+  function calculateModalPrice() {
+    let price = 0;
+
+    if (currentFood.name === 'Pentol Goreng') {
+        const pentolOption = document.querySelector('input[name="pentolPrice"]:checked').value;
+        const customInputDiv = document.getElementById('pentolCustomInput');
+        const errorMsg = document.getElementById('pentolError');
+        
+        if (pentolOption === 'custom') {
+            customInputDiv.style.display = 'block';
+            let customVal = parseInt(document.getElementById('customPentolPrice').value) || 0;
+            
+            if (customVal > 0 && customVal % 5000 === 0) {
+                price = customVal;
+                errorMsg.style.display = 'none';
+            } else {
+                price = 0;
+                errorMsg.style.display = 'block';
+            }
+        } else {
+            customInputDiv.style.display = 'none';
+            price = parseInt(pentolOption);
+        }
+    } else if (currentFood.name === 'Kopi Good Day' || currentFood.name === 'Teajus' || currentFood.name === 'Teh Manis' || currentFood.name === 'Jeruk Peras' || currentFood.name === 'Kopi Kapal Api') {
+        price = currentFood.basePrice;
+    } else {
+        price = currentFood.basePrice;
+        // Cek Pedas Sekali
+        const pedasVal = document.querySelector('input[name="pedas"]:checked').value;
+        if (pedasVal === 'Pedas Sekali') price += 1000;
+        
+        // Cek Extra Telur
+        if (document.getElementById('extraTelur').checked) price += 3000;
+    }
+    
+    document.getElementById('modalTotalPrice').innerText = price.toLocaleString('id-ID');
+  }
+
+  function confirmFoodOrder() {
+    let finalPrice = 0;
+    let notes = '';
+    let temp = '';
+    let userNote = document.getElementById('modalOrderNote').value.trim();
+
+    // Ambil suhu jika opsi ditampilkan
+    if (document.getElementById('tempOptions').style.display === 'block') {
+        temp = document.querySelector('input[name="tempChoice"]:checked').value;
+    }
+
+    if (currentFood.name === 'Pentol Goreng') {
+        // Ambil harga dari tampilan total karena logic sudah ada di calculateModalPrice
+        const totalText = document.getElementById('modalTotalPrice').innerText.replace(/\./g, '');
+        finalPrice = parseInt(totalText);
+        
+        if (finalPrice === 0 || isNaN(finalPrice)) {
+            alert("Mohon masukkan nominal yang valid (kelipatan 5000).");
+            return;
+        }
+        notes = 'Original';
+    } else if (currentFood.name === 'Kopi Good Day') {
+        const flavor = document.querySelector('input[name="goodDayFlavor"]:checked').value;
+        notes = `${flavor}, ${temp}`;
+        finalPrice = currentFood.basePrice;
+    } else if (currentFood.name === 'Teajus') {
+        const flavor = document.querySelector('input[name="teajusFlavor"]:checked').value;
+        notes = `${flavor}, ${temp}`;
+        finalPrice = currentFood.basePrice;
+    } else if (currentFood.name === 'Teh Manis' || currentFood.name === 'Jeruk Peras' || currentFood.name === 'Kopi Kapal Api') {
+        notes = temp;
+        finalPrice = currentFood.basePrice;
+    } else {
+        const pedasVal = document.querySelector('input[name="pedas"]:checked').value;
+        const extraTelur = document.getElementById('extraTelur').checked;
+        notes = `Level: ${pedasVal}`;
+        if (extraTelur) notes += ', +Telur';
+        
+        finalPrice = currentFood.basePrice;
+        if (pedasVal === 'Pedas Sekali') finalPrice += 1000;
+        if (extraTelur) finalPrice += 3000;
+    }
+
+    if (userNote) {
+        notes = notes ? notes + ', ' + userNote : userNote;
+    }
+
+    addToCart(currentFood.name, finalPrice, notes);
+    closeFoodModal();
+  }
+
+  function addToCart(name, price, notes) {
+    // --- EFEK SUARA & ANIMASI ---
+    // 1. Mainkan suara
+    document.getElementById('popSound').play();
+    
+    // 2. Animasikan keranjang
+    const orderBox = document.getElementById('orderBox');
+    orderBox.classList.add('shake-cart');
+    setTimeout(() => {
+      orderBox.classList.remove('shake-cart');
+    }, 800); // Durasi harus cocok dengan CSS
+
+    // Cek apakah item dengan nama DAN catatan yang sama sudah ada
+    let item = cart.find(i => i.name === name && i.notes === notes);
+    if (item) {
+      item.qty++;
+    } else {
+      cart.push({ name: name, price: price, qty: 1, notes: notes });
+    }
+    updateCartDisplay();
+  }
+
+  function updateQty(index, change) {
+    if (cart[index].qty + change <= 0) {
+      // Jika qty 0, hapus item
+      cart.splice(index, 1);
+    } else {
+      cart[index].qty += change;
+    }
+    updateCartDisplay();
+  }
+
+  function deleteItem(index) {
+    cart.splice(index, 1);
+    updateCartDisplay();
+  }
+
+  function updateCartDisplay() {
+    let listHtml = '';
+    let total = 0;
+    let totalQty = 0;
+
+    cart.forEach((item, index) => {
+      total += item.price * item.qty;
+      totalQty += item.qty;
+      listHtml += `
+        <div class="cart-item">
+          <div>
+            <div style="font-weight:600;">${item.name}</div>
+            <div style="font-size:0.8rem; color:var(--primary);">${item.notes}</div>
+            <div style="font-size:0.85rem; color:#666;">@Rp ${item.price.toLocaleString('id-ID')} x ${item.qty}</div>
+          </div>
+          <div class="cart-controls">
+            <button class="btn btn-sm btn-light border" onclick="updateQty(${index}, -1)"><i class="bi bi-dash"></i></button>
+            <span style="font-size:0.9rem; min-width:20px; text-align:center;">${item.qty}</span>
+            <button class="btn btn-sm btn-light border" onclick="updateQty(${index}, 1)"><i class="bi bi-plus"></i></button>
+            <button class="btn btn-sm btn-danger text-white" onclick="deleteItem(${index})"><i class="bi bi-trash"></i></button>
+          </div>
+        </div>
+      `;
+    });
+
+    if (listHtml) {
+        document.getElementById('orderList').innerHTML = listHtml;
+    } else {
+        document.getElementById('orderList').innerHTML = `
+            <div style="text-align:center; padding: 30px 0;">
+                <i class="bi bi-cart-x" style="font-size: 3rem; color: #e5e7eb;"></i>
+                <p style="color:#9ca3af; margin-top:10px; font-size:0.9rem; font-style:italic;">Keranjang masih kosong nih...</p>
+            </div>`;
+    }
+
+    document.getElementById('total').innerText = total.toLocaleString('id-ID');
+    document.getElementById('cartCount').innerText = totalQty;
+  }
+
+  function openModal() {
+    if(cart.length === 0) {
+      alert("Keranjang masih kosong, yuk pesan dulu!");
+      return;
+    }
+    
+    // Render Struk
+    let strukHtml = '<table class="struk-table">';
+    let total = 0;
+    cart.forEach(item => {
+      let subtotal = item.price * item.qty;
+      total += subtotal;
+      strukHtml += `
+        <tr>
+          <td>
+            ${item.name} <span style="color:#666; font-size:0.9em;">x${item.qty}</span><br>
+            <span style="font-size:0.8em; color:#888; font-style:italic;">${item.notes}</span>
+          </td>
+          <td style="text-align:right;">Rp ${subtotal.toLocaleString('id-ID')}</td>
+        </tr>
+      `;
+    });
+    strukHtml += '</table>';
+    
+    document.getElementById('strukItems').innerHTML = strukHtml;
+    document.getElementById('strukTotal').innerText = total.toLocaleString('id-ID');
+    
+    document.getElementById('strukModal').style.display = "block";
+  }
+
+  function closeModal() {
+    document.getElementById('strukModal').style.display = "none";
+  }
+
+  // Tutup modal jika klik di luar area konten
+  window.onclick = function(event) {
+    let modal = document.getElementById('strukModal');
+    let foodModal = document.getElementById('foodModal');
+    if (event.target == modal) {
+      closeModal();
+    } else if (event.target == foodModal) {
+      closeFoodModal();
+    }
+  }
+
+  function toggleAddress() {
+    const type = document.getElementById('orderType').value;
+    const addrGroup = document.getElementById('addressGroup');
+    addrGroup.style.display = (type === 'Delivery') ? 'block' : 'none';
+
+    if (type === 'Delivery') {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(checkRadius, showError);
+        } else {
+            alert("Browser Anda tidak mendukung Geolocation. Pastikan lokasi Anda dalam radius 500m.");
+        }
+    }
+  }
+
+  function checkRadius(position) {
+    const lat1 = -7.440240953056788; // Lokasi Warung
+    const lon1 = 111.03029802346055;
+    const lat2 = position.coords.latitude;
+    const lon2 = position.coords.longitude;
+    
+    // Haversine Formula
+    const R = 6371; // Radius bumi km
+    const dLat = (lat2-lat1) * (Math.PI/180);
+    const dLon = (lon2-lon1) * (Math.PI/180);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const d = R * c; // Jarak dalam km
+
+    if (d > 0.5) { // 0.5 km = 500 meter
+        alert(`Maaf, lokasi Anda terdeteksi sejauh ${(d*1000).toFixed(0)}m. Pengiriman hanya untuk radius 500m.`);
+        document.getElementById('orderType').value = "Take Away";
+        toggleAddress();
+    } else {
+        alert(`Lokasi terjangkau! Jarak Anda: ${(d*1000).toFixed(0)}m.`);
+    }
+  }
+
+  function showError(error) {
+      switch(error.code) {
+          case error.PERMISSION_DENIED:
+              alert("Izin lokasi ditolak. Pastikan Anda berada dalam radius 500m.");
+              break;
+          default:
+              alert("Gagal mendeteksi lokasi.");
+      }
+  }
+
+  function kirimPesanan(){
+    // Hitung total lagi untuk pesan WA
+    let total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    
+    // Ambil data dari form
+    const name = document.getElementById('customerName').value || 'Pelanggan';
+    const type = document.getElementById('orderType').value;
+    const address = document.getElementById('customerAddress').value;
+
+    // Format pesan untuk WhatsApp
+    let message = `*Halo Mbak Arum!* 👋\n`;
+    message += `Saya *${name}* mau pesan nih.\n\n`;
+    
+    message += `📋 *DAFTAR PESANAN:*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━\n`;
+
+    cart.forEach((item, index) => {
+      message += `*${index + 1}. ${item.name}* (${item.qty}x)\n`;
+      if(item.notes) message += `   📝 _${item.notes}_\n`;
+      message += `   💰 Rp ${(item.price * item.qty).toLocaleString('id-ID')}\n\n`;
+    });
+    message += `━━━━━━━━━━━━━━━━━━━\n`;
+    message += `💵 *TOTAL: Rp ${total.toLocaleString('id-ID')}*\n\n`;
+    
+    message += `📦 *METODE:* ${type}\n`;
+    if(type === 'Delivery' && address) message += `📍 *ALAMAT:* ${address}\n`;
+    
+    message += `💳 *BAYAR:* QRIS / Tunai\n\n`;
+    message += `Mohon diproses ya, terima kasih! 🙏`;
+
+    // Ganti nomor HP di bawah ini dengan nomor WhatsApp penjual (format: 628...)
+    let phoneNumber = "6281392240542"; 
+    
+    let url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  }
+
+  // --- LOCAL STORAGE (PENGGANTI DATABASE SEMENTARA) ---
+  // Load ulasan saat halaman dibuka
+  window.addEventListener('DOMContentLoaded', loadLocalReviews);
+
+  function saveReview(event) {
+    event.preventDefault(); // Mencegah reload halaman/submit ke PHP
+
+    const name = document.querySelector('input[name="nama"]').value;
+    const rating = document.querySelector('input[name="rating"]:checked').value;
+    const comment = document.querySelector('textarea[name="komentar"]').value;
+    const date = new Date().toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    const newReview = { name, rating, comment, date };
+
+    // Ambil ulasan lama dari penyimpanan browser
+    let reviews = JSON.parse(localStorage.getItem('warungReviews')) || [];
+    reviews.unshift(newReview); // Tambah ke paling atas
+    
+    // Simpan kembali ke browser
+    localStorage.setItem('warungReviews', JSON.stringify(reviews));
+
+    // Tampilkan ulang
+    renderReviews();
+    
+    // Reset form
+    document.getElementById('reviewForm').reset();
+    alert("Terima kasih! Ulasan Anda telah tersimpan.");
+  }
+
+  function loadLocalReviews() {
+    renderReviews();
+  }
+
+  function renderReviews() {
+    const reviews = JSON.parse(localStorage.getItem('warungReviews')) || [];
+    const container = document.getElementById('latestReviews');
+    
+    if (reviews.length === 0) {
+      container.innerHTML = '<p style="text-align:center; color:#888; font-style:italic;">Belum ada ulasan. Jadilah yang pertama! 😊</p>';
+      return;
+    }
+
+    let html = '';
+    reviews.forEach(review => {
+      const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+      html += `
+        <div style="background:#fffbeb; padding:15px; border-radius:15px; margin-bottom:15px; border: 1px solid #fde68a; box-shadow: 0 2px 4px rgba(0,0,0,0.05); animation: fadeIn 0.5s ease;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <strong style="color:#78350f;">${review.name}</strong>
+                <span style="color:#fbbf24; font-size:1.1rem;">${stars}</span>
+            </div>
+            <p style="margin:5px 0; color:#4b5563; font-style:italic;">"${review.comment}"</p>
+            <small style="color:#9ca3af; font-size:0.8rem;">${review.date}</small>
+        </div>`;
+    });
+    
+    container.innerHTML = html;
+  }
+
+  // --- LEAFLET MAP ---
+  var lat = -7.440579266947078;
+  var lng = 111.03030551990217;
+
+  var map = L.map('map').setView([lat, lng], 15);
+
+  // Basemap 1: OpenStreetMap
+  var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  });
+
+  // Basemap 2: Esri World Imagery
+  var esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  });
+
+  // Tambahkan Esri sebagai default
+  esri.addTo(map);
+
+  // Kontrol Layer
+  var baseMaps = {
+      "OpenStreetMap": osm,
+      "Esri Satelit": esri
+  };
+  L.control.layers(baseMaps).addTo(map);
+
+  // Marker & Popup dengan Link Google Maps
+  var customIcon = L.divIcon({
+    className: 'custom-map-marker',
+    html: '<div class="marker-wrapper"><div class="pin-bounce"><div class="pin-shape"><i class="bi bi-shop"></i></div></div><div class="shadow-pulse"></div></div>',
+    iconSize: [60, 80],
+    iconAnchor: [30, 80],
+    popupAnchor: [0, -70]
+  });
+
+  var marker = L.marker([lat, lng], {icon: customIcon}).addTo(map);
+  
+  var googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  var popupContent = `
+    <div style="text-align:center;">
+        <b>Warung Mbak Arum</b><br>
+        Ngablak, Kroyo, Sragen<br><br>
+        <a href="${googleMapsUrl}" target="_blank" class="btn btn-sm btn-primary text-white" style="text-decoration:none;">
+            <i class="bi bi-map-fill"></i> Rute Google Maps
+        </a>
+    </div>
+  `;
+  
+  marker.bindPopup(popupContent).openPopup();
+
+  // --- HEADER SLIDESHOW ---
+  const headerImages = [
+    'img/background.jpg',
+    'img/nasi-goreng.jpg',
+    'img/bakmi-goreng.jpg',
+    'img/capcay-goreng.jpg'
+  ];
+  let currentHeaderIndex = 0;
+  const headerElement = document.querySelector('header');
+
+  setInterval(() => {
+    currentHeaderIndex = (currentHeaderIndex + 1) % headerImages.length;
+    const nextImage = headerImages[currentHeaderIndex];
+    
+    // Preload image agar tidak kedip saat ganti
+    const img = new Image();
+    img.src = nextImage;
+    img.onload = () => {
+      headerElement.style.backgroundImage = `linear-gradient(rgba(245, 158, 11, 0.4), rgba(180, 83, 9, 0.4)), url('${nextImage}')`;
+    };
+  }, 5000); // Ganti gambar setiap 5 detik
+
+  // --- GAME PUKUL MAKANAN ---
+  const holes = document.querySelectorAll('.hole');
+  const scoreBoard = document.getElementById('scoreBoard');
+  let lastHole;
+  let timeUp = false;
+  let score = 0;
+
+  function randomTime(min, max) {
+    return Math.round(Math.random() * (max - min) + min);
+  }
+
+  function randomHole(holes) {
+    const idx = Math.floor(Math.random() * holes.length);
+    const hole = holes[idx];
+    if (hole === lastHole) {
+      return randomHole(holes);
+    }
+    lastHole = hole;
+    return hole;
+  }
+
+  function peep() {
+    const time = randomTime(500, 1000); // Kecepatan muncul
+    const hole = randomHole(holes);
+    hole.classList.add('up');
+    setTimeout(() => {
+      hole.classList.remove('up');
+      if (!timeUp) peep();
+    }, time);
+  }
+
+  function startGame() {
+    scoreBoard.textContent = 0;
+    timeUp = false;
+    score = 0;
+    document.getElementById('startBtn').disabled = true;
+    document.getElementById('startBtn').textContent = "Main...";
+    peep();
+    setTimeout(() => {
+      timeUp = true;
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('startBtn').textContent = "Main Lagi! 🔄";
+      alert("Waktu Habis! Skor Kamu: " + score);
+    }, 15000); // Game berlangsung 15 detik
+  }
+
+  function bonk(e) {
+    if(!e.isTrusted) return; // Mencegah cheat klik otomatis
+    score++;
+    e.currentTarget.parentNode.classList.remove('up');
+    scoreBoard.textContent = score;
+    
+    // Mainkan efek suara pop yang sudah ada
+    const sound = document.getElementById('popSound');
+    if(sound) {
+        sound.currentTime = 0;
+        sound.play();
+    }
+  }
+
+  // --- NEW EFFECTS & TRANSITIONS ---
+  
+  // 1. Scroll Progress Bar
+  window.addEventListener("scroll", function() {
+    let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    let scrolled = (winScroll / height) * 100;
+    document.getElementById("myBar").style.width = scrolled + "%";
+  });
+
+  // 2. Ripple Effect on Buttons
+  document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      let rect = e.target.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      let y = e.clientY - rect.top;
+      
+      let ripple = document.createElement('span');
+      ripple.classList.add('ripple');
+      ripple.style.left = x + 'px';
+      ripple.style.top = y + 'px';
+      this.appendChild(ripple);
+      
+      setTimeout(() => { ripple.remove() }, 600);
+    });
+  });
+
+  // 3. 3D Tilt Effect for Cards (Efek Kartu 3D Mengikuti Mouse)
+  document.querySelectorAll('.custom-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      card.style.transition = 'none'; // Hapus transisi saat mouse bergerak agar responsif
+      let rect = card.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      let y = e.clientY - rect.top;
+      let centerX = rect.width / 2;
+      let centerY = rect.height / 2;
+      let rotateX = ((y - centerY) / centerY) * -10; // Max tilt 10 deg
+      let rotateY = ((x - centerX) / centerX) * 10;
+
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+    });
+    
+    card.addEventListener('mouseleave', () => {
+      card.style.transition = 'transform 0.5s ease'; // Kembalikan transisi halus saat mouse keluar
+      card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale(1)`;
+    });
+  });
+</script>
+
+</body>
+</html>
