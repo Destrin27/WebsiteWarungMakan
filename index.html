@@ -240,7 +240,21 @@
 
     @media (max-width: 600px) {
       header h1 {font-size: 2rem;}
-      #orderBox {width: calc(100% - 60px); right: 30px; bottom: 20px;}
+      
+      /* Perkecil Keranjang di Mobile */
+      #orderBox { width: 270px; right: 15px; bottom: 15px; }
+      .cart-header { padding: 8px 15px; font-size: 0.9rem; }
+      .cart-body { padding: 10px; max-height: 180px; }
+      .cart-footer { padding: 10px 15px; }
+      .btn-checkout { padding: 8px; font-size: 0.9rem; }
+
+      /* Perkecil Ikon Koki di Mobile */
+      .floating-mascot {
+        width: 80px;
+        height: 80px;
+        left: 15px;
+        bottom: 15px;
+      }
     }
 
     /* Modal Struk Styles */
